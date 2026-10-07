@@ -2044,3 +2044,270 @@ select {
     font-size: 9px;
   }
 }
+.health-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  color: #7a8d6e;
+  margin: 8px 0 19px;
+}
+.health-progress .text-link {
+  padding: 0;
+  flex-shrink: 0;
+}
+.health-topics {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 23px;
+}
+.health-topics button {
+  min-height: 44px;
+  padding: 9px 13px;
+  border: 1px solid #dce5d2;
+  border-radius: 7px;
+  background: #f9fbf5;
+  font-size: 11px;
+  color: #7b8e6d;
+}
+.health-topics button.active {
+  background: #eaf2e1;
+  color: #3e643e;
+  border-color: #a3bc8a;
+}
+.question-select {
+  margin: 0 0 28px;
+}
+.question-select label,
+.health-answer-form > label {
+  display: block;
+  font-size: 12px;
+  color: #8a9a7b;
+  margin-bottom: 10px;
+}
+.question-select select {
+  width: 100%;
+  font-size: 13px;
+}
+.health-interview > .eyebrow {
+  margin-bottom: 12px;
+}
+.health-question {
+  font-family: Georgia, serif;
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: -0.5px;
+  margin: 0 0 14px;
+  color: #345b3c;
+}
+.health-hint {
+  font-size: 14px;
+  line-height: 1.9;
+  color: #829570;
+  margin: 0 0 22px;
+}
+.health-answer-form textarea {
+  width: 100%;
+  border: 1px solid #dbe5ce;
+  border-radius: 9px;
+  padding: 16px;
+  background: #fafcf7;
+  font-size: 15px;
+  line-height: 1.7;
+  resize: vertical;
+  color: #3a603f;
+  min-height: 115px;
+}
+.health-answer-form textarea::placeholder {
+  color: #a0b18e;
+}
+.health-answer-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
+.health-shortcuts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+.health-shortcuts button {
+  background: transparent;
+  border: 1px solid #e0e7d8;
+  border-radius: 7px;
+  min-height: 44px;
+  font-size: 11px;
+  color: #8a9b78;
+  padding: 10px 12px;
+}
+.health-shortcuts button:hover {
+  background: #f3f8ec;
+}
+.health-live {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: #899f73;
+  margin-top: 22px;
+  line-height: 1.7;
+}
+.health-interview .interim {
+  font-size: 13px;
+  color: #8fa279;
+  line-height: 1.8;
+}
+.health-interview .acknowledgment {
+  align-items: flex-start;
+}
+.health-interview .acknowledgment > svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: #8ba56d;
+}
+.next-health {
+  margin: 5px 0 10px;
+}
+.current-answer {
+  background: #f1f7e8;
+  border: 1px solid #d7e7c5;
+  border-radius: 9px;
+  padding: 17px;
+  margin: 0 0 24px;
+}
+.current-answer .eyebrow {
+  font-size: 9px;
+}
+.current-answer p {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #547443;
+  margin: 10px 0;
+}
+.current-answer .text-link {
+  padding: 0;
+}
+.health-all-answers {
+  border-top: 1px solid var(--border);
+  margin-top: 25px;
+  padding-top: 20px;
+}
+.health-all-answers > summary {
+  font-size: 13px;
+  color: #80976c;
+  cursor: pointer;
+  min-height: 44px;
+}
+.health-all-answers section {
+  margin: 20px 0;
+}
+.health-all-answers h3 {
+  font-size: 13px;
+  color: #718960;
+  margin-bottom: 17px;
+}
+.provider-context {
+  border-top: 1px solid #e1e9d3;
+  margin-top: 23px;
+  padding-top: 22px;
+}
+.provider-context h3 {
+  font-size: 14px;
+  margin: 0 0 22px;
+}
+.provider-context h4 {
+  font-size: 11px;
+  color: #93a47d;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 500;
+  margin: 22px 0 14px;
+}
+.provider-context dl {
+  margin: 0;
+}
+.provider-context dl > div {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 12px;
+  border-top: 1px solid #e7ecd9;
+  padding: 13px 0;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.provider-context dt {
+  font-weight: 500;
+  color: #7c9167;
+}
+.provider-context dd {
+  margin: 0;
+  color: #4d7040;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.provider-context p.unanswered-health {
+  font-size: 11px;
+  color: #a4af92;
+  line-height: 1.8;
+  margin-top: 23px;
+}
+.large-text .health-hint,
+.large-text .health-answer-form textarea,
+.large-text .current-answer p,
+.large-text .provider-context dl > div {
+  font-size: 17px;
+}
+@media (max-width: 720px) {
+  .health-question {
+    font-size: 27px;
+  }
+  .health-progress {
+    align-items: flex-start;
+    font-size: 10px;
+  }
+  .health-progress .text-link {
+    font-size: 10px;
+  }
+  .health-topics {
+    gap: 6px;
+  }
+  .health-topics button {
+    font-size: 10px;
+    padding: 9px 11px;
+  }
+  .provider-context dl > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+@media (max-width: 480px) {
+  .health-question {
+    font-size: 25px;
+  }
+  .health-hint {
+    font-size: 13px;
+  }
+  .health-answer-form textarea {
+    font-size: 14px;
+  }
+  .health-shortcuts button {
+    font-size: 10px;
+  }
+  .health-progress {
+    flex-direction: column;
+  }
+  .health-topics button {
+    font-size: 10px;
+  }
+  .health-live {
+    font-size: 10px;
+  }
+  .question-select select {
+    font-size: 12px;
+  }
+}

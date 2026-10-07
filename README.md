@@ -21,9 +21,10 @@ npm run build
 1. Press **Try a sample**. A fictional narrative fills 12 fields across identity, visit history, medications, and allergies.
 2. Type “The pain is three out of ten.” The prior value stays until you confirm the proposed change.
 3. Select any filled field to edit or confirm it.
-4. Choose **Review & finish**, supply a sample birth date and fictional phone number, answer the safety question, and check both acknowledgments.
-5. Complete the demo check-in. **Staff view** shows an encounter identifier with READY or ATTENTION status.
-6. **New session** clears patient fields and transcripts. Completed anonymous encounter entries remain in the tab's demonstration queue.
+4. Open **Your health** to answer the medical, surgical, hospitalization, and family history questions. Try **Try health sample** to fill several new domains together. Unknown and declined answers remain distinct from none.
+5. Choose **Review & finish**, supply a sample birth date and fictional phone number, complete the requested history fields and safety question, and check both acknowledgments.
+6. Complete the demo check-in. **Staff view** shows an encounter identifier with READY or ATTENTION status.
+7. **New session** clears patient fields and transcripts. Completed anonymous encounter entries remain in the tab's demonstration queue.
 
 ## Voice
 
@@ -35,6 +36,8 @@ The speech provider interface is in `src/voice.ts`. Unsupported browsers and per
 
 `src/intake.ts` uses a deterministic English phrase extractor. It supports selected phrases such as “My name is…”, “I take…”, “I am allergic to…”, “It started…”, and “seven out of ten”. It maps across sections regardless of the displayed question. It is **not** a general language-model extractor and cannot understand every phrasing or clinical context. Unmatched statements remain in the original transcript and can be entered manually. Conflicting values require explicit confirmation.
 
+In the health interview, the patient explicitly selects a question. If an answer contains no recognized field mapping, the full response is captured against that selected question. Recognized answers to other questions continue to map to their own fields instead. Voice sections retain the question context. Family statements are excluded from personal pain extraction; relatives and reported ages remain in the source narrative.
+
 Original transcript sections, extraction sources, field review states, and timestamps are held only in memory. Refresh clears the intake. The session clears after ten minutes without pointer or keyboard activity and sixty seconds after completion. The app does not record or retain raw audio. A browser speech provider may transmit audio to its own service; the voice notice explains this.
 
 ## Included
@@ -45,7 +48,8 @@ Original transcript sections, extraction sources, field review states, and times
 - Optional consent-gated photo selection or camera capture; in-memory preview.
 - Patient review, preliminary structured summary, test acknowledgment, and simulated check-in.
 - Explicit immediate-attention answer and an ATTENTION demonstration queue state.
-- Seven extraction tests covering multi-field narrative, conflicts, unknown content, negatives, and preserved source strings.
+- A 23-question universal health interview grouped into current health, past care, family history, daily life, and the care team, with a provider-facing history summary.
+- Extraction tests covering multi-field narratives, question context, conflicts, family-versus-patient history, unknown/declined/negative answers, and preserved source strings.
 
 ## Not connected yet
 

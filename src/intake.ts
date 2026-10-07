@@ -1,3 +1,4 @@
+import { healthFields } from "./health.ts";
 export type FieldId =
   | "name"
   | "dob"
@@ -16,6 +17,26 @@ export type FieldId =
   | "medications"
   | "allergies"
   | "history"
+  | "familyHistory"
+  | "surgeries"
+  | "hospitalizations"
+  | "priorInjuries"
+  | "priorTreatment"
+  | "imaging"
+  | "currentSymptoms"
+  | "ros"
+  | "tobacco"
+  | "alcohol"
+  | "substances"
+  | "occupation"
+  | "exercise"
+  | "sleep"
+  | "nutrition"
+  | "functionalLimitations"
+  | "pcp"
+  | "specialists"
+  | "referral"
+  | "additionalConcerns"
   | "insurance"
   | "memberId";
 export type Group = "identity" | "story" | "health";
@@ -25,6 +46,8 @@ export type Field = {
   group: Group;
   placeholder: string;
   required?: boolean;
+  question?: string;
+  topic?: string;
 };
 export const fields: Field[] = [
   {
@@ -127,26 +150,7 @@ export const fields: Field[] = [
     group: "story",
     placeholder: "What would you like to get back to?",
   },
-  {
-    id: "medications",
-    label: "Current medications",
-    group: "health",
-    placeholder: "Names, doses if known, or none",
-    required: true,
-  },
-  {
-    id: "allergies",
-    label: "Allergies",
-    group: "health",
-    placeholder: "Allergies and reactions, or none",
-    required: true,
-  },
-  {
-    id: "history",
-    label: "Medical history",
-    group: "health",
-    placeholder: "Anything your care team should know",
-  },
+  ...healthFields,
 ];
 export type Candidate = { id: FieldId; value: string; source: string };
 export type Captured = {
@@ -176,33 +180,127 @@ function clean(s: string) {
     .trim();
 }
 // Deliberately bounded, deterministic demo extraction. Unknown language stays in the transcript.
-export function extract(text: string): Candidate[] {
+export function extract(text: string, context?: FieldId | null): Candidate[] {
   const out: Candidate[] = [];
   const put = (id: FieldId, value: string | undefined) => {
     if (value && clean(value))
       out.push({ id, value: clean(value), source: text });
   };
   const clauses = text
+    .replace(/\b(Dr|Mr|Mrs|Ms|St)\./gi, "$1．")
     .split(
-      /[,;.!?]|\b(?:and|but)\b(?=\s+(?:my|I|the|it|walking|rest|I’m|I'm|I'm))/i,
+      /[;!?]|\.(?=\s|$)|\b(?:and|but)\b(?=\s+(?:my|I|the|it|walking|rest|I’m|I'm))/i,
     )
-    .map(clean)
+    .map((c) => clean(c.replace(/．/g, ".")))
     .filter(Boolean);
-  const name = text.match(
+  const identityText = clauses
+    .filter(
+      (c) =>
+        !/\b(?:my\s+(?:mother|father|mom|dad|parents|sister|brother|sibling|son|daughter|child|children|grandmother|grandfather|grandparent|aunt|uncle|primary care|PCP|specialist|specialists)|family (?:medical )?history|I was referred by)\b/i.test(
+          c,
+        ),
+    )
+    .join(". ");
+  const name = identityText.match(
     /\bmy name is\s+([\p{L}'’-]+(?:\s+[\p{L}'’-]+){0,3}?)(?=\s+(?:and|my|I|i'm)\b|[,;.!?]|$)/iu,
   );
   put("name", name?.[1]);
-  const born = text.match(
+  const born = identityText.match(
     /\b(?:date of birth is|birthday is|born on|born)\s+([^;.!?]+?)(?=\s+and\b|,\s*(?:my|I)\b|$)/i,
   );
   put("dob", born?.[1]);
-  const email = text.match(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/i);
+  const email = identityText.match(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/i);
   put("email", email?.[0]);
-  const phone = text.match(
-    /(?:phone(?: number)?(?: is)?|call me at)\s*([+\d()\s-]{7,22})/i,
+  const phone = identityText.match(
+    /(?:my phone(?: number)?(?: is)?|my number is|call me at)\s*([+\d()\s-]{7,22})/i,
   );
   put("phone", phone?.[1]);
   for (const c of clauses) {
+    const family =
+      /\b(?:my\s+(?:mother|father|mom|dad|parents|sister|brother|sibling|son|daughter|child|children|grandmother|grandfather|grandparent|aunt|uncle)|family (?:medical )?history|conditions run in my family)\b/i.test(
+        c,
+      );
+    if (family) {
+      put("familyHistory", c);
+      continue;
+    }
+    const narrativePatterns: [FieldId, RegExp][] = [
+      [
+        "surgeries",
+        /\b(?:my surgical history (?:is|includes)|my surgeries (?:are|include)|I had surgery (?:for|on)|I had an? (?:appendectomy|hysterectomy|knee replacement|hip replacement))\b/i,
+      ],
+      [
+        "hospitalizations",
+        /\b(?:my hospitalizations (?:are|include)|I was (?:hospitalized|admitted to (?:the |a )?hospital))\b/i,
+      ],
+      [
+        "priorInjuries",
+        /\b(?:my previous injuries (?:are|include)|I was previously injured|my prior injuries (?:are|include))\b/i,
+      ],
+      [
+        "priorTreatment",
+        /\b(?:my previous treatment (?:was|includes)|I tried|my prior treatment (?:was|includes))\b/i,
+      ],
+      [
+        "imaging",
+        /\b(?:my imaging (?:was|includes)|I had (?:an? )?(?:MRI|CT scan|X-ray|ultrasound))\b/i,
+      ],
+      [
+        "currentSymptoms",
+        /\b(?:my other symptoms (?:are|include)|my current symptoms (?:are|include))\b/i,
+      ],
+      [
+        "ros",
+        /\b(?:my review of systems (?:is|includes)|my other health changes (?:are|include))\b/i,
+      ],
+      [
+        "tobacco",
+        /\b(?:I (?:smoke|vape|quit smoking|stopped smoking|do not smoke|don't smoke|have never smoked)|my tobacco use is|my nicotine use is)\b/i,
+      ],
+      [
+        "alcohol",
+        /\b(?:my alcohol use is|I drink alcohol|I (?:do not|don't) drink alcohol)\b/i,
+      ],
+      [
+        "substances",
+        /\b(?:my substance use is|I use cannabis|I use marijuana)\b/i,
+      ],
+      [
+        "occupation",
+        /\b(?:I work as|my occupation is|my job is|I am retired|I'm retired)\b/i,
+      ],
+      [
+        "exercise",
+        /\b(?:my exercise (?:is|includes)|I exercise|my usual activity is)\b/i,
+      ],
+      ["sleep", /\b(?:I sleep|my sleep is|I have trouble sleeping)\b/i],
+      [
+        "nutrition",
+        /\b(?:my diet is|my appetite is|my dietary restrictions (?:are|include))\b/i,
+      ],
+      [
+        "functionalLimitations",
+        /\b(?:my daily limitations (?:are|include)|my functional limitations (?:are|include)|I have difficulty (?:walking|dressing|driving|working))\b/i,
+      ],
+      [
+        "pcp",
+        /\b(?:my primary care (?:provider|doctor|physician) is|my PCP is|I (?:do not|don't) have a primary care (?:provider|doctor))\b/i,
+      ],
+      [
+        "specialists",
+        /\b(?:my specialist is|my specialists (?:are|include)|I see a specialist|I am seeing a specialist)\b/i,
+      ],
+      [
+        "referral",
+        /\b(?:I was referred by|my referral (?:is|came from)|I heard about you (?:from|through))\b/i,
+      ],
+      [
+        "additionalConcerns",
+        /\b(?:my additional concerns (?:are|include)|I also want to discuss|my question for the provider is)\b/i,
+      ],
+    ];
+    for (const [id, pattern] of narrativePatterns)
+      if (pattern.test(c)) put(id, c);
     put("address", c.match(/\b(?:my address is|I live at)\s+(.+)/i)?.[1]);
     put(
       "insurance",
@@ -277,28 +375,61 @@ export function extract(text: string): Candidate[] {
       )?.[1],
     );
   }
-  const anatomy = text.match(
+  const patientText = clauses
+    .filter(
+      (c) =>
+        !/\b(?:my\s+(?:mother|father|mom|dad|parents|sister|brother|sibling|son|daughter|child|children|grandmother|grandfather|grandparent|aunt|uncle)|family (?:medical )?history)\b/i.test(
+          c,
+        ),
+    )
+    .join(". ");
+  const anatomy = patientText.match(
     /\b(?:(left|right|both)\s+)?(lower back|upper back|back|neck|knees?|shoulders?|hips?|ankles?|wrists?|elbows?|head|legs?|arms?|feet|foot|hands?)\b/i,
   );
   // Only map anatomy when the statement explicitly concerns pain/symptoms, never from incidental mentions.
-  if (anatomy && /\b(?:hurts?|pain|aching|sore|discomfort)\b/i.test(text)) {
+  if (
+    anatomy &&
+    /\b(?:hurts?|pain|aching|sore|discomfort)\b/i.test(patientText)
+  ) {
     put("location", anatomy[2]);
     put("side", anatomy[1]);
   }
   const severity =
-    text.match(
+    patientText.match(
       /\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|10|[0-9])\s*(?:out of (?:ten|10)|\/\s*10)/i,
     ) ||
-    text.match(
+    patientText.match(
       /\b(?:pain(?: level)?(?: is| at)?|severity(?: is)?)\s+(zero|one|two|three|four|five|six|seven|eight|nine|ten|10|[0-9])\b/i,
     );
   if (severity)
     put("severity", numberWords[severity[1].toLowerCase()] || severity[1]);
-  const quality = text.match(
+  const quality = patientText.match(
     /\b(sharp|dull|burning|throbbing|aching|stabbing|shooting|tingling)\b/i,
   );
   put("quality", quality?.[1]);
-  return Array.from(new Map(out.map((c) => [c.id, c])).values());
+  const merged = new Map<FieldId, Candidate>();
+  for (const candidate of out) {
+    const previous = merged.get(candidate.id);
+    if (
+      previous &&
+      healthFields.some((f) => f.id === candidate.id) &&
+      previous.value !== candidate.value
+    )
+      merged.set(candidate.id, {
+        ...candidate,
+        value: `${previous.value}; ${candidate.value}`,
+      });
+    else merged.set(candidate.id, candidate);
+  }
+  // Context is used only for an explicitly selected question with no other recognized answer.
+  if (
+    context &&
+    merged.size === 0 &&
+    fields.some((f) => f.id === context) &&
+    clean(text)
+  )
+    merged.set(context, { id: context, value: clean(text), source: text });
+  return Array.from(merged.values());
 }
 export function propose(current: RecordData, candidates: Candidate[]) {
   const updates: Candidate[] = [];

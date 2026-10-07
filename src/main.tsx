@@ -42,6 +42,7 @@ import {
   type FieldId,
 } from "./intake";
 import { browserSpeech, speak, type Recognition } from "./voice";
+import { healthFields, healthTopics, HEALTH_SAMPLE } from "./health";
 import "./styles.css";
 type Stage = "story" | "identity" | "health" | "review";
 type VoiceState =
@@ -56,6 +57,7 @@ type Segment = {
   original: string;
   timestamp: string;
   source: "voice" | "text" | "sample";
+  questionId?: FieldId | null;
 };
 const stages: { id: Stage; title: string; hint: string; icon: typeof Mic }[] = [
   {
@@ -120,6 +122,10 @@ function App() {
   const [large, setLarge] = useState(false);
   const [edit, setEdit] = useState<Field | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [healthQuestionId, setHealthQuestionId] =
+    useState<FieldId>("familyHistory");
+  const [healthAnswer, setHealthAnswer] = useState("");
+  const voiceContext = useRef<FieldId | null>(null);
   const [category, setCategory] = useState("Other / Unsure");
   const [safety, setSafety] = useState<null | boolean>(null);
   const [accepted, setAccepted] = useState(false);
@@ -137,15 +143,25 @@ function App() {
   const photoRef = useRef<string | null>(null);
   photoRef.current = photo;
   const fileInput = useRef<HTMLInputElement>(null);
-  const capture = (text: string, source: Segment["source"]) => {
+  const capture = (
+    text: string,
+    source: Segment["source"],
+    context: FieldId | null = source === "voice" ? voiceContext.current : null,
+  ) => {
     if (!text.trim()) return;
     setAccurate(false);
     const timestamp = new Date().toISOString();
     setSegments((s) => [
       ...s,
-      { id: crypto.randomUUID(), original: text.trim(), timestamp, source },
+      {
+        id: crypto.randomUUID(),
+        original: text.trim(),
+        timestamp,
+        source,
+        questionId: context,
+      },
     ]);
-    const candidates = extract(text);
+    const candidates = extract(text, context);
     const proposal = propose(dataRef.current, candidates);
     const next = { ...dataRef.current };
     for (const c of proposal.updates)
@@ -185,7 +201,8 @@ function App() {
     setVoice(paused ? "paused" : "stopped");
     setInterim("");
   };
-  const start = () => {
+  const start = (context: FieldId | null = null) => {
+    voiceContext.current = context;
     if (!consentRef.current) {
       setConsentModal(true);
       return;
@@ -219,7 +236,7 @@ function App() {
       let draft = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
         if (e.results[i].isFinal)
-          captureRef.current(e.results[i][0].transcript, "voice");
+          captureRef.current(e.results[i][0].transcript, "voice", context);
         else draft += e.results[i][0].transcript;
       }
       setInterim(draft);
@@ -270,6 +287,9 @@ function App() {
     setConflicts([]);
     setUpdated([]);
     setInput("");
+    setHealthAnswer("");
+    setHealthQuestionId("familyHistory");
+    voiceContext.current = null;
     setInterim("");
     setConsent(false);
     consentRef.current = false;
@@ -331,6 +351,29 @@ function App() {
     (f) => f?.value && f.confirmed,
   ).length;
   const currentFields = fields.filter((f) => f.group === stage);
+  const healthQuestion = healthFields.find((f) => f.id === healthQuestionId)!;
+  const answeredHealth = healthFields.filter((f) => data[f.id]?.value).length;
+  const chooseHealthQuestion = (id: FieldId) => {
+    stop();
+    voiceContext.current = null;
+    setHealthQuestionId(id);
+    setHealthAnswer("");
+  };
+  const nextHealthQuestion = () => {
+    const index = healthFields.findIndex((f) => f.id === healthQuestionId);
+    const ordered = [
+      ...healthFields.slice(index + 1),
+      ...healthFields.slice(0, index + 1),
+    ];
+    const next = ordered.find((f) => !dataRef.current[f.id]?.value);
+    if (next) chooseHealthQuestion(next.id);
+    else {
+      stop();
+      setNotice(
+        "Your health questions are answered. Please review them before finishing.",
+      );
+    }
+  };
   const storyFields = fields.filter((f) => f.group === "story");
   const complete = () => {
     if (
@@ -434,6 +477,8 @@ function App() {
                 key={s.id}
                 aria-label={s.title}
                 onClick={() => {
+                  stop();
+                  voiceContext.current = null;
                   setStage(s.id);
                   setStaff(false);
                 }}
@@ -765,7 +810,7 @@ function App() {
                           </button>
                         </>
                       ) : (
-                        <button className="primary" onClick={start}>
+                        <button className="primary" onClick={() => start()}>
                           <Mic size={17} />
                           {voice === "paused"
                             ? "Resume speaking"
@@ -937,9 +982,256 @@ function App() {
                     </h3>
                     <span>EDITABLE AT ANY TIME</span>
                   </div>
-                  <div className="form-fields">
-                    {currentFields.map((f) => fieldCard(f))}
-                  </div>
+                  {stage === "identity" ? (
+                    <div className="form-fields">
+                      {currentFields.map((f) => fieldCard(f))}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="health-interview">
+                        <div className="health-progress">
+                          <span>
+                            {answeredHealth} of {healthFields.length} health
+                            questions answered
+                          </span>
+                          <button
+                            className="text-link"
+                            onClick={() => {
+                              stop();
+                              capture(HEALTH_SAMPLE, "sample");
+                            }}
+                          >
+                            Try health sample <Play size={14} />
+                          </button>
+                        </div>
+                        <div
+                          className="health-topics"
+                          aria-label="Health question topics"
+                        >
+                          {healthTopics.map((topic) => (
+                            <button
+                              className={
+                                healthQuestion.topic === topic.id
+                                  ? "active"
+                                  : ""
+                              }
+                              key={topic.id}
+                              aria-pressed={healthQuestion.topic === topic.id}
+                              onClick={() => {
+                                const topicFields = healthFields.filter(
+                                  (f) => f.topic === topic.id,
+                                );
+                                chooseHealthQuestion(
+                                  (
+                                    topicFields.find(
+                                      (f) => !data[f.id]?.value,
+                                    ) || topicFields[0]
+                                  ).id,
+                                );
+                              }}
+                            >
+                              {topic.title}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="question-select">
+                          <label htmlFor="health-question">
+                            Choose a question — any order is welcome
+                          </label>
+                          <select
+                            id="health-question"
+                            value={healthQuestionId}
+                            onChange={(e) =>
+                              chooseHealthQuestion(e.target.value as FieldId)
+                            }
+                          >
+                            {healthTopics.map((topic) => (
+                              <optgroup label={topic.title} key={topic.id}>
+                                {healthFields
+                                  .filter((f) => f.topic === topic.id)
+                                  .map((f) => (
+                                    <option value={f.id} key={f.id}>
+                                      {data[f.id]?.value ? "✓ " : ""}
+                                      {f.label}
+                                    </option>
+                                  ))}
+                              </optgroup>
+                            ))}
+                          </select>
+                        </div>
+                        <span className="eyebrow">
+                          {
+                            healthTopics.find(
+                              (t) => t.id === healthQuestion.topic,
+                            )?.title
+                          }{" "}
+                          {healthQuestion.required
+                            ? "· RESPONSE REQUESTED"
+                            : "· OPTIONAL"}
+                        </span>
+                        <h2
+                          className="health-question"
+                          id="health-question-title"
+                        >
+                          {healthQuestion.question}
+                        </h2>
+                        <p className="health-hint">
+                          {healthQuestion.placeholder}
+                        </p>
+                        {data[healthQuestionId]?.value && (
+                          <div className="current-answer">
+                            <span className="eyebrow">
+                              YOUR CAPTURED ANSWER
+                            </span>
+                            <p>{data[healthQuestionId]?.value}</p>
+                            <button
+                              className="text-link"
+                              onClick={() => {
+                                stop();
+                                setEdit(healthQuestion);
+                                setEditValue(
+                                  data[healthQuestionId]?.value || "",
+                                );
+                              }}
+                            >
+                              Review or edit <ArrowRight size={14} />
+                            </button>
+                          </div>
+                        )}
+                        <form
+                          className="health-answer-form"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            stop();
+                            capture(healthAnswer, "text", healthQuestionId);
+                            setHealthAnswer("");
+                          }}
+                        >
+                          <label htmlFor="health-answer">Your answer</label>
+                          <textarea
+                            id="health-answer"
+                            value={healthAnswer}
+                            onChange={(e) => setHealthAnswer(e.target.value)}
+                            placeholder="Tell us in your own words…"
+                            rows={3}
+                          />
+                          <div className="health-answer-actions">
+                            <button
+                              className="primary"
+                              disabled={!healthAnswer.trim()}
+                            >
+                              Capture answer <Check size={16} />
+                            </button>
+                            {voice === "listening" ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className="secondary"
+                                  onClick={() => stop(true)}
+                                >
+                                  <Pause size={16} />
+                                  Pause
+                                </button>
+                                <button
+                                  type="button"
+                                  className="secondary"
+                                  onClick={() => stop()}
+                                >
+                                  <MicOff size={16} />
+                                  Stop
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                type="button"
+                                className="secondary"
+                                onClick={() => start(healthQuestionId)}
+                              >
+                                <Mic size={16} />
+                                Answer by voice
+                              </button>
+                            )}
+                          </div>
+                        </form>
+                        <div className="health-shortcuts">
+                          <button
+                            onClick={() => {
+                              stop();
+                              capture(
+                                "None reported",
+                                "text",
+                                healthQuestionId,
+                              );
+                            }}
+                          >
+                            None / not applicable
+                          </button>
+                          <button
+                            onClick={() => {
+                              stop();
+                              capture("Unknown", "text", healthQuestionId);
+                            }}
+                          >
+                            I don’t know
+                          </button>
+                          <button
+                            onClick={() => {
+                              stop();
+                              capture(
+                                "Prefer not to answer",
+                                "text",
+                                healthQuestionId,
+                              );
+                            }}
+                          >
+                            Prefer not to answer
+                          </button>
+                        </div>
+                        <div
+                          className="health-live"
+                          role="status"
+                          aria-live="polite"
+                        >
+                          <Mic size={16} />
+                          <span>
+                            {voice === "listening"
+                              ? "Listening — you may answer this or any other question."
+                              : voice === "paused"
+                                ? "Microphone paused."
+                                : "Microphone off."}
+                          </span>
+                        </div>
+                        {interim && <p className="interim">{interim}</p>}
+                        <div className="acknowledgment" role="status">
+                          <Sparkles size={16} />
+                          <p>{notice}</p>
+                        </div>
+                        <button
+                          className="secondary next-health"
+                          onClick={nextHealthQuestion}
+                          disabled={answeredHealth === healthFields.length}
+                        >
+                          Next unanswered question <ArrowRight size={16} />
+                        </button>
+                      </div>
+                      <details className="health-all-answers">
+                        <summary>
+                          View all health answers ({answeredHealth}/
+                          {healthFields.length})
+                        </summary>
+                        {healthTopics.map((topic) => (
+                          <section key={topic.id}>
+                            <h3>{topic.title}</h3>
+                            <div className="form-fields">
+                              {healthFields
+                                .filter((f) => f.topic === topic.id)
+                                .map((f) => fieldCard(f))}
+                            </div>
+                          </section>
+                        ))}
+                      </details>
+                    </>
+                  )}
                   {stage === "identity" && (
                     <div className="photo-section">
                       <div>
@@ -1154,13 +1446,52 @@ function App() {
                       .join(" ") ||
                       "Your story will appear here when you add answers."}
                   </p>
+                  <div className="provider-context">
+                    <h3>Medical, family & social history for your provider</h3>
+                    {healthTopics.map((topic) => {
+                      const answered = healthFields.filter(
+                        (f) => f.topic === topic.id && data[f.id]?.value,
+                      );
+                      return answered.length > 0 ? (
+                        <section key={topic.id}>
+                          <h4>{topic.title}</h4>
+                          <dl>
+                            {answered.map((f) => (
+                              <div key={f.id}>
+                                <dt>{f.label}</dt>
+                                <dd>{data[f.id]?.value}</dd>
+                              </div>
+                            ))}
+                          </dl>
+                        </section>
+                      ) : null;
+                    })}
+                    <p className="unanswered-health">
+                      Not answered:{" "}
+                      {healthFields
+                        .filter((f) => !data[f.id]?.value)
+                        .map((f) => f.label.toLowerCase())
+                        .join(", ") || "All health questions have a response"}
+                      . Unanswered questions do not mean “no history.”
+                    </p>
+                  </div>
                 </div>
                 <details className="original-transcript">
                   <summary>
                     Read original transcript ({segments.length} sections)
                   </summary>
                   {segments.map((s) => (
-                    <p key={s.id}>{s.original}</p>
+                    <p key={s.id}>
+                      {s.questionId && (
+                        <strong>
+                          {fields.find((f) => f.id === s.questionId)
+                            ?.question ||
+                            fields.find((f) => f.id === s.questionId)?.label}
+                          <br />
+                        </strong>
+                      )}
+                      {s.original}
+                    </p>
                   ))}
                 </details>
                 <div className="demo-consent">
@@ -1347,7 +1678,7 @@ function App() {
                   setConsent(true);
                   consentRef.current = true;
                   setConsentModal(false);
-                  start();
+                  start(voiceContext.current);
                 }}
               >
                 Enable voice
