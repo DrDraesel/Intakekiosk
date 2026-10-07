@@ -53,6 +53,18 @@ No clinic database, Google Sheets/Drive/Gmail, OCR, provider sign-in, clinical q
 
 ## Vercel
 
+Live synthetic demo: https://imw-patient-kiosk.vercel.app
+
+Source repository: https://github.com/DrDraesel/Intakekiosk
+
+The Vercel project `imw2/imw-patient-kiosk` is connected to this repository. Pushes to `main` deploy the demo, and pull requests create previews. GitHub Actions runs the extraction tests and production build. Deployment access follows the Vercel project's protection settings.
+
+Clone the source with:
+
+```powershell
+git clone git@github.com:DrDraesel/Intakekiosk.git
+```
+
 The source root includes `vercel.json` for a Vite deployment. For an account-backed preview, sign in and deploy:
 
 ```powershell
