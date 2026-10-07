@@ -53,6 +53,8 @@ Original transcript sections, extraction sources, field review states, and times
 
 ## Not connected yet
 
+Supabase connection preparation is in `supabase/SETUP.md`, with a locked-down SQL foundation and a read-only `GET /api/storage-status` server route. The route checks only a non-sensitive migration marker using a server-configured publishable key. It never accepts or stores patient answers. A successful connection still reports `patientStorageEnabled: false` until authenticated clinical workflows and the required infrastructure configuration are implemented.
+
 No clinic database, Google Sheets/Drive/Gmail, OCR, provider sign-in, clinical questionnaire registry, approved consent signatures, general AI extraction, staff notifications, durable recovery, or P620 event delivery is implemented. The staff screen is intentionally public demonstration UI and does not show real patient records. Do not use real patient data.
 
 ## Vercel
