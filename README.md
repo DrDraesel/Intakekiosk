@@ -26,7 +26,15 @@ npm run build
 6. Complete the demo check-in. **Staff view** shows an encounter identifier with READY or ATTENTION status.
 7. **New session** clears patient fields and transcripts. Completed anonymous encounter entries remain in the tab's demonstration queue.
 
-## Voice
+## Languages
+
+The always-visible selector supports English, Spanish, and Russian. It translates patient questions, instructions, navigation, field labels, placeholders, accessibility labels, notices, consent dialogs, review summaries, staff demonstration screens, and sample narratives. Clinic branding stays unchanged. Switching language preserves patient values and original transcript evidence; existing patient statements are not machine-translated.
+
+Speech recognition and spoken acknowledgments use `en-US`, `es-US`, or `ru-RU` according to the selector. Changing language stops the prior recognition session before the next one starts. Available voices and recognition support depend on the browser/device. Actual microphone hardware across these languages still needs device testing.
+
+`src/multilingual.ts` maps supported Spanish and Russian phrases to the same canonical field IDs used by English. Family reports remain separate from the patient's own history. Explicitly selected questions accept unmapped responses verbatim, while recognized out-of-order answers fill their own fields. This remains a bounded phrase extractor, not general AI interpretation or translation of arbitrary clinical narratives. Original words, names, doses, and source text are preserved.
+
+## Voice input
 
 **Start speaking** presents the transcription notice before requesting microphone access. The browser's SpeechRecognition implementation provides interim and final transcripts where supported. Each voice section ends after a pause; the patient can start another section, pause, or stop. Microphone state and acknowledgments remain visible. Spoken feedback plays after listening ends so it is not recorded as a patient answer.
 

@@ -44,6 +44,9 @@ import {
 import { browserSpeech, speak, type Recognition } from "./voice";
 import { healthFields, healthTopics, HEALTH_SAMPLE } from "./health";
 import "./styles.css";
+import { translate, speechLocales, type Locale } from "./i18n";
+import { localizeTree } from "./LocalizedTree";
+import { extractLocalized } from "./multilingual";
 type Stage = "story" | "identity" | "health" | "review";
 type VoiceState =
   | "idle"
@@ -97,6 +100,17 @@ const categories = [
   "Other / Unsure",
 ];
 function App() {
+  const [locale, setLocale] = useState<Locale>("en");
+  const t = (text: string) => translate(text, locale);
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    document.title =
+      locale === "es"
+        ? "IMW · Registro del paciente"
+        : locale === "ru"
+          ? "IMW · Регистрация пациента"
+          : "IMW · Patient check-in";
+  }, [locale]);
   const [stage, setStage] = useState<Stage>("story");
   const [data, setData] = useState<RecordData>({});
   const dataRef = useRef(data);
@@ -161,7 +175,7 @@ function App() {
         questionId: context,
       },
     ]);
-    const candidates = extract(text, context);
+    const candidates = extractLocalized(text, context, locale);
     const proposal = propose(dataRef.current, candidates);
     const next = { ...dataRef.current };
     for (const c of proposal.updates)
@@ -190,7 +204,8 @@ function App() {
         ? `${ack} A different answer needs your confirmation.`
         : ack,
     );
-    if (source !== "voice") speak(ack, audioRef.current);
+    if (source !== "voice")
+      speak(t(ack), audioRef.current, undefined, speechLocales[locale]);
   };
   const captureRef = useRef(capture);
   captureRef.current = capture;
@@ -220,7 +235,7 @@ function App() {
     recognition.current = r;
     active.current = true;
     lastAcknowledgment.current = "";
-    r.lang = "en-US";
+    r.lang = speechLocales[locale];
     r.continuous = false;
     r.interimResults = true;
     r.onstart = () => {
@@ -260,7 +275,12 @@ function App() {
       setVoice((v) => (v === "error" || v === "paused" ? v : "stopped"));
       setInterim("");
       if (lastAcknowledgment.current)
-        speak(lastAcknowledgment.current, audioRef.current);
+        speak(
+          t(lastAcknowledgment.current),
+          audioRef.current,
+          undefined,
+          speechLocales[locale],
+        );
     };
     setVoice("requesting");
     setNotice("Starting your microphone. Your browser may ask for permission.");
@@ -390,7 +410,7 @@ function App() {
       ...q,
       {
         id,
-        time: new Date().toLocaleTimeString([], {
+        time: new Date().toLocaleTimeString(speechLocales[locale], {
           hour: "2-digit",
           minute: "2-digit",
         }),
@@ -400,10 +420,14 @@ function App() {
     ]);
     setSubmitted(true);
     speak(
-      safety
-        ? "Your demo intake is complete. Please notify staff now."
-        : "Thank you. Your demo check-in is complete.",
+      t(
+        safety
+          ? "Your demo intake is complete. Please notify staff now."
+          : "Thank you. Your demo check-in is complete.",
+      ),
       audio,
+      undefined,
+      speechLocales[locale],
     );
   };
   const fieldCard = (f: Field, compact = false) => (
@@ -420,7 +444,10 @@ function App() {
         {f.label}
         {f.required && <span className="required"> *</span>}
       </span>
-      <span className={`field-value ${data[f.id]?.value ? "" : "empty"}`}>
+      <span
+        translate={data[f.id]?.value ? "no" : undefined}
+        className={`field-value ${data[f.id]?.value ? "" : "empty"}`}
+      >
         {data[f.id]?.value || f.placeholder}
       </span>
       <span className="field-status">
@@ -438,7 +465,7 @@ function App() {
       </span>
     </button>
   );
-  return (
+  return localizeTree(
     <div className={`app ${large ? "large-text" : ""}`}>
       <aside className="sidebar">
         <a
@@ -531,6 +558,36 @@ function App() {
         </div>
       </aside>
       <div className="workspace">
+        <div className="language-bar" translate="no">
+          <label htmlFor="intake-language">Language · Idioma · Язык</label>
+          <select
+            id="intake-language"
+            value={locale}
+            onChange={(event) => {
+              active.current = false;
+              recognition.current?.abort();
+              recognition.current = null;
+              window.speechSynthesis?.cancel();
+              setVoice("stopped");
+              setInterim("");
+              voiceContext.current = null;
+              lastAcknowledgment.current = "";
+              setNotice(
+                "Your answers can come in any order. We’ll organize them for you.",
+              );
+              setLocale(event.target.value as Locale);
+            }}
+          >
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="ru">Русский</option>
+          </select>
+          <p>
+            {t(
+              "Voice transcription follows the selected language. Original responses are preserved.",
+            )}
+          </p>
+        </div>
         <header>
           <div className="breadcrumb">
             Patient check-in <ChevronRight size={14} />
@@ -823,7 +880,7 @@ function App() {
                         className="sample-button"
                         onClick={() => {
                           stop();
-                          capture(SAMPLE, "sample");
+                          capture(t(SAMPLE), "sample");
                         }}
                       >
                         <Play size={15} />
@@ -872,12 +929,15 @@ function App() {
                                   ? "VOICE"
                                   : "TYPED"}{" "}
                               ·{" "}
-                              {new Date(s.timestamp).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                              {new Date(s.timestamp).toLocaleTimeString(
+                                speechLocales[locale],
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )}
                             </span>
-                            <p>{s.original}</p>
+                            <p translate="no">{s.original}</p>
                           </div>
                         ))
                       ) : (
@@ -888,7 +948,7 @@ function App() {
                         </p>
                       )}
                       {interim && (
-                        <p className="interim">
+                        <p className="interim" translate="no">
                           {interim}
                           <span className="typing-dot" />
                         </p>
@@ -998,7 +1058,7 @@ function App() {
                             className="text-link"
                             onClick={() => {
                               stop();
-                              capture(HEALTH_SAMPLE, "sample");
+                              capture(t(HEALTH_SAMPLE), "sample");
                             }}
                           >
                             Try health sample <Play size={14} />
@@ -1083,7 +1143,9 @@ function App() {
                             <span className="eyebrow">
                               YOUR CAPTURED ANSWER
                             </span>
-                            <p>{data[healthQuestionId]?.value}</p>
+                            <p translate="no">
+                              {data[healthQuestionId]?.value}
+                            </p>
                             <button
                               className="text-link"
                               onClick={() => {
@@ -1158,7 +1220,7 @@ function App() {
                             onClick={() => {
                               stop();
                               capture(
-                                "None reported",
+                                t("None reported"),
                                 "text",
                                 healthQuestionId,
                               );
@@ -1169,7 +1231,7 @@ function App() {
                           <button
                             onClick={() => {
                               stop();
-                              capture("Unknown", "text", healthQuestionId);
+                              capture(t("Unknown"), "text", healthQuestionId);
                             }}
                           >
                             I don’t know
@@ -1178,7 +1240,7 @@ function App() {
                             onClick={() => {
                               stop();
                               capture(
-                                "Prefer not to answer",
+                                t("Prefer not to answer"),
                                 "text",
                                 healthQuestionId,
                               );
@@ -1439,12 +1501,12 @@ function App() {
                   <span className="eyebrow">
                     PRELIMINARY INTAKE SUMMARY · REQUIRES CLINICIAN VERIFICATION
                   </span>
-                  <p>
+                  <p translate="no">
                     {fields
                       .filter((f) => f.group === "story" && data[f.id]?.value)
-                      .map((f) => `${f.label}: ${data[f.id]?.value}.`)
+                      .map((f) => `${t(f.label)}: ${data[f.id]?.value}.`)
                       .join(" ") ||
-                      "Your story will appear here when you add answers."}
+                      t("Your story will appear here when you add answers.")}
                   </p>
                   <div className="provider-context">
                     <h3>Medical, family & social history for your provider</h3>
@@ -1459,7 +1521,7 @@ function App() {
                             {answered.map((f) => (
                               <div key={f.id}>
                                 <dt>{f.label}</dt>
-                                <dd>{data[f.id]?.value}</dd>
+                                <dd translate="no">{data[f.id]?.value}</dd>
                               </div>
                             ))}
                           </dl>
@@ -1470,7 +1532,7 @@ function App() {
                       Not answered:{" "}
                       {healthFields
                         .filter((f) => !data[f.id]?.value)
-                        .map((f) => f.label.toLowerCase())
+                        .map((f) => t(f.label))
                         .join(", ") || "All health questions have a response"}
                       . Unanswered questions do not mean “no history.”
                     </p>
@@ -1490,7 +1552,7 @@ function App() {
                           <br />
                         </strong>
                       )}
-                      {s.original}
+                      <span translate="no">{s.original}</span>
                     </p>
                   ))}
                 </details>
@@ -1532,8 +1594,7 @@ function App() {
                 </div>
                 {missing.length > 0 && (
                   <p className="missing-fields">
-                    Still needed:{" "}
-                    {missing.map((f) => f.label.toLowerCase()).join(", ")}.
+                    Still needed: {missing.map((f) => t(f.label)).join(", ")}.
                   </p>
                 )}
               </section>
@@ -1551,7 +1612,8 @@ function App() {
                         {fields.find((f) => f.id === c.id)?.label}
                       </strong>
                       <span>
-                        Current: {data[c.id]?.value} · New: {c.value}
+                        Current: <span translate="no">{data[c.id]?.value}</span>{" "}
+                        · New: <span translate="no">{c.value}</span>
                       </span>
                     </p>
                     <button
@@ -1736,7 +1798,7 @@ function App() {
               data[edit.id]?.source !== "Patient entered or reviewed" && (
                 <details>
                   <summary>Original source</summary>
-                  <p>{data[edit.id]?.source}</p>
+                  <p translate="no">{data[edit.id]?.source}</p>
                 </details>
               )}
             <div className="modal-actions">
@@ -1763,7 +1825,8 @@ function App() {
         <RotateCcw size={15} />
         New session
       </button>
-    </div>
+    </div>,
+    locale,
   );
 }
 createRoot(document.getElementById("root")!).render(<App />);

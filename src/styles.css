@@ -2312,39 +2312,237 @@ select {
   }
 }
 
-/* Adapt to available screen space, including mobile browser chrome and cutouts. */
-.app { min-height: 100dvh; }
-.sidebar { overflow-y: auto; }
-.modal { max-height: calc(100dvh - 48px); }
-.modal-backdrop { padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
-.form-card, .review-card, .captured-panel, .form-fields, .review-grid, .field-card { min-width: 0; }
-.field-card, .current-answer p, .transcript-body { overflow-wrap: anywhere; }
-@media (pointer: coarse) {
-  button, select, input, summary { min-height: 44px; }
-  .icon-button, .modal-close { min-width: 44px; min-height: 44px; }
+.language-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px max(16px, env(safe-area-inset-right)) 12px
+    max(16px, env(safe-area-inset-left));
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+.language-bar label {
+  font-size: 12px;
+  color: #345b3c;
+}
+.language-bar p {
+  flex-basis: 100%;
+  margin: 0;
+  text-align: right;
+  color: #64745b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.language-bar select {
+  font-size: 16px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #a3bc8a;
+  border-radius: 8px;
+  color: #345b3c;
+  background: #f7faf3;
+}
+html[lang="ru"] .nav-text strong {
+  overflow-wrap: anywhere;
 }
 @media (max-width: 600px) {
-  .workspace { margin-left: 0; padding-bottom: calc(140px + env(safe-area-inset-bottom)); }
-  .sidebar { inset: auto 0 0; width: 100%; padding: 6px max(8px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); border-right: 0; border-top: 1px solid var(--border); overflow: visible; }
-  .sidebar > .brand, .sidebar-divider, .sidebar-label { display: none; }
-  .sidebar nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
-  .nav-item { flex-direction: column; gap: 5px; padding: 8px 2px; margin: 0; min-height: 60px; text-align: center; }
-  .nav-text { display: block; flex: 0; }
-  .nav-text strong { font-size: 10px; }
-  .nav-text small { display: none; }
-  .sidebar-bottom { display: contents; }
-  .help-button { position: fixed; left: max(12px, env(safe-area-inset-left)); bottom: calc(80px + env(safe-area-inset-bottom)); background: #fff; border: 1px solid var(--border); border-radius: 50%; width: 44px; height: 44px; padding: 8px; }
-  .reset-button { left: auto; right: max(12px, env(safe-area-inset-right)); bottom: calc(80px + env(safe-area-inset-bottom)); min-width: 44px; min-height: 44px; background: #fff; border: 1px solid var(--border); border-radius: 50%; }
-  main { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
-  header { height: auto; min-height: 68px; gap: 8px; padding: calc(8px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left)); }
-  .breadcrumb { flex-wrap: wrap; min-width: 0; font-size: 11px; }
-  .header-actions { flex-shrink: 0; gap: 2px; }
-  .icon-button, .staff-button, .modal-close { min-width: 44px; min-height: 44px; }
-  input, select, textarea, .question-select select, .health-answer-form textarea, .edit-modal textarea { font-size: 16px; }
-  button, summary { min-height: 44px; }
-  .primary, .secondary, .sample-button, .health-shortcuts button, .health-topics button { font-size: 12px; }
-  .health-hint, .lead, .acknowledgment p, .field-value { font-size: 14px; }
-  .health-progress, .health-progress .text-link { font-size: 12px; }
-  .captured-fields { grid-template-columns: 1fr; }
-  .modal { max-height: calc(100dvh - 32px); }
+  .language-bar {
+    justify-content: space-between;
+  }
+  .language-bar label {
+    font-size: 11px;
+  }
+  .language-bar p {
+    text-align: left;
+  }
+  .voice-actions,
+  .health-answer-actions {
+    flex-wrap: wrap;
+  }
+  .health-answer-actions > button {
+    flex: 1 1 160px;
+  }
+  .nav-text strong {
+    font-size: 9px;
+  }
+  .nav-item {
+    min-height: 70px;
+  }
+  .help-button,
+  .reset-button {
+    bottom: calc(90px + env(safe-area-inset-bottom));
+  }
+}
+/* Adapt to available screen space, including mobile browser chrome and cutouts. */
+.app {
+  min-height: 100dvh;
+}
+.sidebar {
+  overflow-y: auto;
+}
+.modal {
+  max-height: calc(100dvh - 48px);
+}
+.modal-backdrop {
+  padding: max(16px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+}
+.form-card,
+.review-card,
+.captured-panel,
+.form-fields,
+.review-grid,
+.field-card {
+  min-width: 0;
+}
+.field-card,
+.current-answer p,
+.transcript-body {
+  overflow-wrap: anywhere;
+}
+@media (pointer: coarse) {
+  button,
+  select,
+  input,
+  summary {
+    min-height: 44px;
+  }
+  .icon-button,
+  .modal-close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+@media (max-width: 600px) {
+  .workspace {
+    margin-left: 0;
+    padding-bottom: calc(140px + env(safe-area-inset-bottom));
+  }
+  .sidebar {
+    inset: auto 0 0;
+    width: 100%;
+    padding: 6px max(8px, env(safe-area-inset-right))
+      calc(6px + env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+    border-right: 0;
+    border-top: 1px solid var(--border);
+    overflow: visible;
+  }
+  .sidebar > .brand,
+  .sidebar-divider,
+  .sidebar-label {
+    display: none;
+  }
+  .sidebar nav {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .nav-item {
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px 2px;
+    margin: 0;
+    min-height: 60px;
+    text-align: center;
+  }
+  .nav-text {
+    display: block;
+    flex: 0;
+  }
+  .nav-text strong {
+    font-size: 10px;
+  }
+  .nav-text small {
+    display: none;
+  }
+  .sidebar-bottom {
+    display: contents;
+  }
+  .help-button {
+    position: fixed;
+    left: max(12px, env(safe-area-inset-left));
+    bottom: calc(80px + env(safe-area-inset-bottom));
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    padding: 8px;
+  }
+  .reset-button {
+    left: auto;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: calc(80px + env(safe-area-inset-bottom));
+    min-width: 44px;
+    min-height: 44px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+  }
+  main {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+  header {
+    height: auto;
+    min-height: 68px;
+    gap: 8px;
+    padding: calc(8px + env(safe-area-inset-top))
+      max(12px, env(safe-area-inset-right)) 8px
+      max(12px, env(safe-area-inset-left));
+  }
+  .breadcrumb {
+    flex-wrap: wrap;
+    min-width: 0;
+    font-size: 11px;
+  }
+  .header-actions {
+    flex-shrink: 0;
+    gap: 2px;
+  }
+  .icon-button,
+  .staff-button,
+  .modal-close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  input,
+  select,
+  textarea,
+  .question-select select,
+  .health-answer-form textarea,
+  .edit-modal textarea {
+    font-size: 16px;
+  }
+  button,
+  summary {
+    min-height: 44px;
+  }
+  .primary,
+  .secondary,
+  .sample-button,
+  .health-shortcuts button,
+  .health-topics button {
+    font-size: 12px;
+  }
+  .health-hint,
+  .lead,
+  .acknowledgment p,
+  .field-value {
+    font-size: 14px;
+  }
+  .health-progress,
+  .health-progress .text-link {
+    font-size: 12px;
+  }
+  .captured-fields {
+    grid-template-columns: 1fr;
+  }
+  .modal {
+    max-height: calc(100dvh - 32px);
+  }
 }

@@ -37,14 +37,25 @@ export const browserSpeech: SpeechToTextProvider = {
     return Constructor ? new Constructor() : null;
   },
 };
-export function speak(text: string, enabled: boolean, done?: () => void) {
+export function speak(
+  text: string,
+  enabled: boolean,
+  done?: () => void,
+  language = "en-US",
+) {
   if (!enabled || !("speechSynthesis" in window)) {
     done?.();
     return;
   }
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "en-US";
+  utterance.lang = language;
+  const voice =
+    window.speechSynthesis.getVoices().find((v) => v.lang === language) ||
+    window.speechSynthesis
+      .getVoices()
+      .find((v) => v.lang.startsWith(language.split("-")[0]));
+  if (voice) utterance.voice = voice;
   utterance.rate = 0.94;
   utterance.onend = () => done?.();
   utterance.onerror = () => done?.();
