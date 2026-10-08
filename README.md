@@ -98,3 +98,9 @@ Vercel's anonymous temporary previews expire after one hour unless claimed throu
 ## Next engineering step
 
 Replace the bounded extractor with a protected server-side structured extraction adapter using the canonical field IDs, source evidence, unknown values, conflict checks, and patient verification already represented here. Choose and validate a production speech provider on the target iPad, then connect approved persistence, OCR, consents, and notifications behind their own interfaces.
+
+## Medical summary and service discussion
+
+Review and Staff view include a live, source-linked clinical and functional summary of the current intake. It preserves original patient wording and distinguishes reviewed answers, missing information, and conflicting responses. It does not generate diagnoses, infer root causes, or determine treatment eligibility. Clinicians can record a working visit reason in the temporary Staff view.
+
+The clinician service catalog reflects nine departments listed at https://www.innovativemedicalwellness.com/en on October 8, 2026. Optional discussion selection requires clinician review, patient interest, a working visit reason, no unresolved conflicts, and a negative immediate-help response. It sends no messages or orders and makes no treatment or efficacy recommendations. Availability, evidence, contraindications, alternatives and pricing require clinic verification. Summary and clinician draft remain in browser memory; secure patient storage remains disabled.

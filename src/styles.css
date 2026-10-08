@@ -2546,3 +2546,77 @@ html[lang="ru"] .nav-text strong {
     max-height: calc(100dvh - 32px);
   }
 }
+.medical-summary {
+  text-align: left;
+  width: 100%;
+  margin: 28px 0;
+  padding: 24px;
+  background: #f4f6ef;
+  border: 1px solid #dbe1d3;
+  border-radius: 18px;
+  overflow-wrap: anywhere;
+}
+.medical-summary h2 {
+  font-size: clamp(24px, 4vw, 34px);
+  margin: 12px 0;
+}
+.medical-summary p {
+  line-height: 1.6;
+}
+.medical-reason {
+  padding: 16px;
+  border-left: 3px solid #536b51;
+  background: #fff;
+}
+.medical-section {
+  border-bottom: 1px solid #dbe1d3;
+  padding: 18px 0;
+}
+.medical-section dl > div {
+  margin: 14px 0;
+}
+.medical-section dt {
+  font-weight: 600;
+}
+.medical-section dd {
+  margin: 5px 0;
+  white-space: pre-wrap;
+}
+.medical-summary details {
+  margin: 10px 0;
+}
+.medical-summary summary {
+  cursor: pointer;
+  min-height: 32px;
+}
+.service-discussion {
+  padding-top: 24px;
+}
+.service-discussion textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #c8d1c2;
+  border-radius: 10px;
+}
+.service-discussion select {
+  width: 100%;
+  min-height: 44px;
+  font-size: 16px;
+}
+.summary-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+}
+.summary-check input {
+  min-width: 20px;
+  min-height: 20px;
+}
+@media (max-width: 540px) {
+  .medical-summary {
+    padding: 16px;
+  }
+}

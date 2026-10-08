@@ -47,6 +47,7 @@ import "./styles.css";
 import { translate, speechLocales, type Locale } from "./i18n";
 import { localizeTree } from "./LocalizedTree";
 import { extractLocalized } from "./multilingual";
+import { MedicalSummary } from "./MedicalSummary";
 type Stage = "story" | "identity" | "health" | "review";
 type VoiceState =
   | "idle"
@@ -673,6 +674,14 @@ function App() {
               This queue exists only in this browser tab. No staff notification
               is sent.
             </p>
+            <MedicalSummary
+              key={JSON.stringify(data)}
+              data={data}
+              locale={locale}
+              safety={safety}
+              conflictCount={conflicts.length}
+              clinician
+            />
           </main>
         ) : submitted ? (
           <main className="success">
@@ -703,6 +712,12 @@ function App() {
               <ArrowRight size={18} />
             </button>
             <small>This kiosk clears the intake in 60 seconds.</small>
+            <MedicalSummary
+              data={data}
+              locale={locale}
+              safety={safety}
+              conflictCount={conflicts.length}
+            />
           </main>
         ) : (
           <main>
@@ -1538,6 +1553,12 @@ function App() {
                     </p>
                   </div>
                 </div>
+                <MedicalSummary
+                  data={data}
+                  locale={locale}
+                  safety={safety}
+                  conflictCount={conflicts.length}
+                />
                 <details className="original-transcript">
                   <summary>
                     Read original transcript ({segments.length} sections)

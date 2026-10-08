@@ -1,5 +1,6 @@
 import messages from "./locales/en.json" with { type: "json" };
 import { rows } from "./locales/translations.ts";
+import { summaryTranslations } from "./locales/summaryTranslations.ts";
 export type Locale = "en" | "es" | "ru";
 export const speechLocales: Record<Locale, string> = {
   en: "en-US",
@@ -33,6 +34,7 @@ Object.assign(catalog, {
     ru: "Выберите изображение размером меньше 10 МБ.",
   },
 });
+Object.assign(catalog, summaryTranslations);
 export function translate(text: string, locale: Locale): string {
   if (locale === "en") return text;
   const normalized = text.replace(/\s+/g, " ").trim();
