@@ -48,6 +48,7 @@ import { translate, speechLocales, type Locale } from "./i18n";
 import { localizeTree } from "./LocalizedTree";
 import { extractLocalized } from "./multilingual";
 import { MedicalSummary } from "./MedicalSummary";
+import { buildSubmission, submitIntake } from "./missionControl";
 type Stage = "story" | "identity" | "health" | "review";
 type VoiceState =
   | "idle"
@@ -420,6 +421,22 @@ function App() {
       },
     ]);
     setSubmitted(true);
+    void submitIntake(
+      buildSubmission({
+        id,
+        locale,
+        category,
+        attention: !!safety,
+        data: dataRef.current,
+        segments,
+      }),
+    ).then((outcome) => {
+      console.info(
+        outcome.ok
+          ? `Mission Control: intake ${id} delivered.`
+          : `Mission Control: intake ${id} not delivered (${outcome.error ?? outcome.status}).`,
+      );
+    });
     speak(
       t(
         safety
