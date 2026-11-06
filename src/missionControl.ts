@@ -3,7 +3,7 @@
  *
  * The kiosk keeps nothing by design; when a patient completes a check-in the
  * structured record is POSTed to the practice's local Mission Control hub
- * (default http://127.0.0.1:9090/api/intake, override with VITE_MC_URL).
+ * (default http://127.0.0.1:8790/api/intake — LabFlow — override with VITE_MC_URL).
  * The call never throws and never blocks the patient flow - a failed delivery
  * is reported in the console, and the answers stay in this browser tab.
  */
@@ -42,7 +42,7 @@ export type IntakeSubmission = {
   }[];
 };
 
-const DEFAULT_ENDPOINT = "http://127.0.0.1:9090/api/intake";
+const DEFAULT_ENDPOINT = "http://127.0.0.1:8790/api/intake";
 
 export function missionControlEndpoint(): string {
   const meta = import.meta as unknown as {

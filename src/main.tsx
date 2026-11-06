@@ -147,6 +147,12 @@ function App() {
   const [accepted, setAccepted] = useState(false);
   const [accurate, setAccurate] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  // Delivery to the clinic's local Mission Control hub.  The kiosk keeps
+  // nothing, so a failed delivery has to be visible to staff, not just logged.
+  const [delivery, setDelivery] = useState<
+    "idle" | "pending" | "delivered" | "failed"
+  >("idle");
+  const [deliveryError, setDeliveryError] = useState("");
   const [staff, setStaff] = useState(false);
   const [photoConsent, setPhotoConsent] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
@@ -421,6 +427,8 @@ function App() {
       },
     ]);
     setSubmitted(true);
+    setDelivery("pending");
+    setDeliveryError("");
     void submitIntake(
       buildSubmission({
         id,
@@ -431,6 +439,10 @@ function App() {
         segments,
       }),
     ).then((outcome) => {
+      setDelivery(outcome.ok ? "delivered" : "failed");
+      setDeliveryError(
+        outcome.ok ? "" : String(outcome.error ?? `HTTP ${outcome.status ?? "?"}`),
+      );
       console.info(
         outcome.ok
           ? `Mission Control: intake ${id} delivered.`
@@ -687,6 +699,15 @@ function App() {
                 </div>
               )}
             </div>
+            <p className={`footnote delivery ${delivery}`}>
+              {delivery === "delivered"
+                ? "Clinic record: intake delivered to Mission Control."
+                : delivery === "failed"
+                  ? `Clinic record: NOT delivered (${deliveryError}). The answers exist only in this tab — copy them before closing it.`
+                  : delivery === "pending"
+                    ? "Clinic record: sending…"
+                    : "Clinic record: nothing sent yet."}
+            </p>
             <p className="footnote">
               This queue exists only in this browser tab. No staff notification
               is sent.
