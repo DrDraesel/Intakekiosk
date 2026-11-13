@@ -1,0 +1,197 @@
+[
+  {
+    "id": "name",
+    "label": "Full name",
+    "required": true
+  },
+  {
+    "id": "dob",
+    "label": "Date of birth",
+    "required": true
+  },
+  {
+    "id": "phone",
+    "label": "Phone number",
+    "required": true
+  },
+  {
+    "id": "email",
+    "label": "Email",
+    "required": false
+  },
+  {
+    "id": "address",
+    "label": "Address",
+    "required": false
+  },
+  {
+    "id": "insurance",
+    "label": "Insurance company",
+    "required": false
+  },
+  {
+    "id": "memberId",
+    "label": "Member ID",
+    "required": false
+  },
+  {
+    "id": "reason",
+    "label": "Reason for visit",
+    "required": true
+  },
+  {
+    "id": "location",
+    "label": "Area of concern",
+    "required": false
+  },
+  {
+    "id": "side",
+    "label": "Side",
+    "required": false
+  },
+  {
+    "id": "onset",
+    "label": "When it started",
+    "required": false
+  },
+  {
+    "id": "severity",
+    "label": "Pain level",
+    "required": false
+  },
+  {
+    "id": "quality",
+    "label": "What it feels like",
+    "required": false
+  },
+  {
+    "id": "aggravating",
+    "label": "What makes it worse",
+    "required": false
+  },
+  {
+    "id": "relieving",
+    "label": "What helps",
+    "required": false
+  },
+  {
+    "id": "goals",
+    "label": "Your goal",
+    "required": false
+  },
+  {
+    "id": "medications",
+    "label": "Current medications",
+    "required": true
+  },
+  {
+    "id": "allergies",
+    "label": "Allergies",
+    "required": true
+  },
+  {
+    "id": "currentSymptoms",
+    "label": "Other current symptoms",
+    "required": false
+  },
+  {
+    "id": "ros",
+    "label": "Review of systems",
+    "required": false
+  },
+  {
+    "id": "history",
+    "label": "Medical history",
+    "required": true
+  },
+  {
+    "id": "surgeries",
+    "label": "Surgical history",
+    "required": true
+  },
+  {
+    "id": "hospitalizations",
+    "label": "Hospitalizations",
+    "required": true
+  },
+  {
+    "id": "priorInjuries",
+    "label": "Previous injuries",
+    "required": false
+  },
+  {
+    "id": "priorTreatment",
+    "label": "Previous treatment",
+    "required": false
+  },
+  {
+    "id": "imaging",
+    "label": "Prior imaging or tests",
+    "required": false
+  },
+  {
+    "id": "familyHistory",
+    "label": "Family medical history",
+    "required": true
+  },
+  {
+    "id": "tobacco",
+    "label": "Tobacco & nicotine",
+    "required": false
+  },
+  {
+    "id": "alcohol",
+    "label": "Alcohol use",
+    "required": false
+  },
+  {
+    "id": "substances",
+    "label": "Other substance use",
+    "required": false
+  },
+  {
+    "id": "occupation",
+    "label": "Occupation & work duties",
+    "required": false
+  },
+  {
+    "id": "exercise",
+    "label": "Activity & exercise",
+    "required": false
+  },
+  {
+    "id": "sleep",
+    "label": "Sleep",
+    "required": false
+  },
+  {
+    "id": "nutrition",
+    "label": "Nutrition",
+    "required": false
+  },
+  {
+    "id": "functionalLimitations",
+    "label": "Daily activity limitations",
+    "required": false
+  },
+  {
+    "id": "pcp",
+    "label": "Primary care provider",
+    "required": false
+  },
+  {
+    "id": "specialists",
+    "label": "Other treating providers",
+    "required": false
+  },
+  {
+    "id": "referral",
+    "label": "Referral source",
+    "required": false
+  },
+  {
+    "id": "additionalConcerns",
+    "label": "Anything else for your provider",
+    "required": false
+  }
+]
